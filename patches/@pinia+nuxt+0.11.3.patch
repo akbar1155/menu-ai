@@ -1,0 +1,35 @@
+diff --git a/node_modules/@pinia/nuxt/dist/runtime/plugin.vue3.js b/node_modules/@pinia/nuxt/dist/runtime/plugin.vue3.js
+index 39173c7..e953f87 100644
+--- a/node_modules/@pinia/nuxt/dist/runtime/plugin.vue3.js
++++ b/node_modules/@pinia/nuxt/dist/runtime/plugin.vue3.js
+@@ -10,6 +10,9 @@ const plugin = defineNuxtPlugin({
+     if (nuxtApp.payload && nuxtApp.payload.pinia) {
+       pinia.state.value = nuxtApp.payload.pinia;
+     }
++    // CRITICAL FIX: Attach Pinia to nuxtApp.$pinia immediately
++    nuxtApp.$pinia = pinia;
++    nuxtApp.vueApp.config.globalProperties.$pinia = pinia;
+     return {
+       provide: {
+         pinia
+@@ -19,7 +22,19 @@ const plugin = defineNuxtPlugin({
+   hooks: {
+     "app:rendered"() {
+       const nuxtApp = useNuxtApp();
+-      nuxtApp.payload.pinia = toRaw(nuxtApp.$pinia).state.value;
++      // SAFETY CHECK: Ensure $pinia exists before accessing state
++      if (!nuxtApp.$pinia) {
++        // Try to get Pinia from provides
++        const pinia = nuxtApp.vueApp._context.provides?.pinia ||
++          nuxtApp.vueApp.config.globalProperties.$pinia;
++        if (pinia) {
++          nuxtApp.$pinia = pinia;
++        }
++      }
++      // Only access state if $pinia exists
++      if (nuxtApp.$pinia) {
++        nuxtApp.payload.pinia = toRaw(nuxtApp.$pinia).state.value;
++      }
+       setActivePinia(void 0);
+     }
+   }

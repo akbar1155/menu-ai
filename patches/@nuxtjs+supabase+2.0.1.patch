@@ -1,0 +1,136 @@
+diff --git a/node_modules/@nuxtjs/supabase/dist/runtime/plugins/supabase.client.js b/node_modules/@nuxtjs/supabase/dist/runtime/plugins/supabase.client.js
+index 38bc98b..a5c2f24 100644
+--- a/node_modules/@nuxtjs/supabase/dist/runtime/plugins/supabase.client.js
++++ b/node_modules/@nuxtjs/supabase/dist/runtime/plugins/supabase.client.js
+@@ -10,6 +10,27 @@ export default defineNuxtPlugin({
+   async setup({ provide }) {
+     const nuxtApp = useNuxtApp();
+     const { url, key, cookieOptions, cookiePrefix, useSsrCookies, clientOptions } = useRuntimeConfig().public.supabase;
++    
++    // SAFETY CHECK: If credentials are missing, provide mock client
++    if (!url || !key) {
++      provide("supabase", {
++        client: {
++          auth: {
++            getUser: () => Promise.resolve({ data: { user: null }, error: null }),
++            getSession: () => Promise.resolve({ data: { session: null }, error: null }),
++            signInWithPassword: () => Promise.resolve({ data: null, error: { message: "Supabase not configured" } }),
++            signUp: () => Promise.resolve({ data: null, error: { message: "Supabase not configured" } }),
++            signOut: () => Promise.resolve({ error: null }),
++            onAuthStateChange: () => ({ data: { subscription: null }, error: null }),
++            getClaims: () => Promise.resolve({ data: { claims: null }, error: null }),
++          },
++        },
++      });
++      useSupabaseSession().value = null;
++      useSupabaseUser().value = null;
++      return;
++    }
++    
+     let client;
+     if (useSsrCookies) {
+       client = createBrowserClient(url, key, {
+diff --git a/node_modules/@nuxtjs/supabase/dist/runtime/plugins/supabase.server.js b/node_modules/@nuxtjs/supabase/dist/runtime/plugins/supabase.server.js
+index 5c6b7e5..d99be22 100644
+--- a/node_modules/@nuxtjs/supabase/dist/runtime/plugins/supabase.server.js
++++ b/node_modules/@nuxtjs/supabase/dist/runtime/plugins/supabase.server.js
+@@ -11,6 +11,28 @@ export default defineNuxtPlugin({
+   enforce: "pre",
+   async setup({ provide }) {
+     const { url, key, cookiePrefix, useSsrCookies, cookieOptions, clientOptions } = useRuntimeConfig().public.supabase;
++    
++    // SAFETY CHECK: If credentials are missing, provide mock client
++    if (!url || !key) {
++      provide("supabase", {
++        client: {
++          auth: {
++            getUser: () => Promise.resolve({ data: { user: null }, error: null }),
++            getSession: () => Promise.resolve({ data: { session: null }, error: null }),
++            signInWithPassword: () => Promise.resolve({ data: null, error: { message: "Supabase not configured" } }),
++            signUp: () => Promise.resolve({ data: null, error: { message: "Supabase not configured" } }),
++            signOut: () => Promise.resolve({ error: null }),
++          },
++        },
++      });
++      // Set empty session/user
++      if (useSsrCookies) {
++        useSupabaseSession().value = null;
++        useSupabaseUser().value = null;
++      }
++      return;
++    }
++    
+     const event = useRequestEvent();
+     const client = createServerClient(url, key, {
+       ...clientOptions,
+diff --git a/node_modules/@nuxtjs/supabase/dist/runtime/plugins/supabase.server.js.backup b/node_modules/@nuxtjs/supabase/dist/runtime/plugins/supabase.server.js.backup
+new file mode 100644
+index 0000000..5c6b7e5
+--- /dev/null
++++ b/node_modules/@nuxtjs/supabase/dist/runtime/plugins/supabase.server.js.backup
+@@ -0,0 +1,43 @@
++import { createServerClient, parseCookieHeader } from "@supabase/ssr";
++import { getHeader } from "h3";
++import { fetchWithRetry } from "../utils/fetch-retry.js";
++import { setCookies } from "../utils/cookies.js";
++import { serverSupabaseUser, serverSupabaseSession } from "../server/services/index.js";
++import { useSupabaseSession } from "../composables/useSupabaseSession.js";
++import { useSupabaseUser } from "../composables/useSupabaseUser.js";
++import { defineNuxtPlugin, useRequestEvent, useRuntimeConfig } from "#imports";
++export default defineNuxtPlugin({
++  name: "supabase",
++  enforce: "pre",
++  async setup({ provide }) {
++    const { url, key, cookiePrefix, useSsrCookies, cookieOptions, clientOptions } = useRuntimeConfig().public.supabase;
++    const event = useRequestEvent();
++    const client = createServerClient(url, key, {
++      ...clientOptions,
++      cookies: {
++        getAll: () => parseCookieHeader(getHeader(event, "Cookie") ?? ""),
++        setAll: (cookies) => setCookies(event, cookies)
++      },
++      cookieOptions: {
++        ...cookieOptions,
++        name: cookiePrefix
++      },
++      global: {
++        fetch: fetchWithRetry,
++        ...clientOptions.global
++      }
++    });
++    provide("supabase", { client });
++    if (useSsrCookies) {
++      const [
++        session,
++        user
++      ] = await Promise.all([
++        serverSupabaseSession(event).catch(() => null),
++        serverSupabaseUser(event).catch(() => null)
++      ]);
++      useSupabaseSession().value = session;
++      useSupabaseUser().value = user;
++    }
++  }
++});
+diff --git a/node_modules/@nuxtjs/supabase/dist/runtime/server/services/serverSupabaseClient.js b/node_modules/@nuxtjs/supabase/dist/runtime/server/services/serverSupabaseClient.js
+index d397b8a..7cc8063 100644
+--- a/node_modules/@nuxtjs/supabase/dist/runtime/server/services/serverSupabaseClient.js
++++ b/node_modules/@nuxtjs/supabase/dist/runtime/server/services/serverSupabaseClient.js
+@@ -6,6 +6,17 @@ import { useRuntimeConfig } from "#imports";
+ export const serverSupabaseClient = async (event) => {
+   if (!event.context._supabaseClient) {
+     const { url, key, cookiePrefix, cookieOptions, clientOptions: { auth = {}, global = {} } } = useRuntimeConfig(event).public.supabase;
++
++    // SAFETY CHECK: If credentials are missing, provide mock client
++    if (!url || !key) {
++      return {
++        auth: {
++          signUp: () => Promise.resolve({ data: null, error: { message: "Supabase not configured" } }),
++          signInWithPassword: () => Promise.resolve({ data: null, error: { message: "Supabase not configured" } }),
++        },
++      };
++    }
++
+     event.context._supabaseClient = createServerClient(url, key, {
+       auth,
+       cookies: {
