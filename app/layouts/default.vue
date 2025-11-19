@@ -15,7 +15,7 @@
           <nav class="flex items-center gap-2 sm:gap-4">
             <ClientOnly>
               <!-- Mobile menu button for logged in users -->
-              <button v-if="user" @click="isMobileMenuOpen = !isMobileMenuOpen" 
+              <button v-if="user && $route.path !== '/'" @click="isMobileMenuOpen = !isMobileMenuOpen" 
                 class="lg:hidden p-2 rounded-lg hover:bg-gray-100 transition-colors cursor-pointer">
                 <UIcon :name="isMobileMenuOpen ? 'i-lucide-x' : 'i-lucide-menu'" class="w-6 h-6 text-gray-700" />
               </button>
@@ -44,7 +44,7 @@
 
     <!-- Mobile Sidebar Overlay -->
     <ClientOnly>
-      <div v-if="user && isMobileMenuOpen" 
+      <div v-if="user && $route.path !== '/' && isMobileMenuOpen" 
         class="fixed inset-0 bg-black/50 z-40 lg:hidden" 
         @click="isMobileMenuOpen = false"></div>
     </ClientOnly>
@@ -53,7 +53,7 @@
     <main class="flex-1 flex flex-col lg:flex-row pt-[72px]">
       <!-- Desktop Sidebar -->
       <ClientOnly>
-        <aside v-if="user" :class="['bg-gradient-to-b from-white to-gray-50/50 border-r border-gray-100 h-[calc(100vh-72px)] lg:fixed lg:top-[72px] lg:left-0 shadow-sm transition-all duration-300 hidden lg:block overflow-hidden', isSidebarCollapsed ? 'w-20' : 'w-64']">
+        <aside v-if="user && $route.path !== '/'" :class="['bg-gradient-to-b from-white to-gray-50/50 border-r border-gray-100 h-[calc(100vh-72px)] lg:fixed lg:top-[72px] lg:left-0 shadow-sm transition-all duration-300 hidden lg:block overflow-hidden', isSidebarCollapsed ? 'w-20' : 'w-64']">
           <nav class="p-5 flex flex-col h-full overflow-hidden">
             <ul class="space-y-1.5 flex-1 overflow-hidden">
               <li>
@@ -125,7 +125,7 @@
 
       <!-- Mobile Sidebar -->
       <ClientOnly>
-        <aside v-if="user && isMobileMenuOpen" 
+        <aside v-if="user && $route.path !== '/' && isMobileMenuOpen" 
           class="fixed top-[72px] left-0 w-64 h-[calc(100vh-72px)] bg-gradient-to-b from-white to-gray-50/50 border-r border-gray-100 shadow-xl z-50 lg:hidden overflow-hidden">
           <nav class="p-5 flex flex-col h-full overflow-hidden">
             <ul class="space-y-1.5 flex-1 overflow-hidden">
@@ -180,7 +180,7 @@
       </ClientOnly>
       
       <!-- Page Content -->
-      <div class="flex-1 lg:pl-64" :class="{'lg:pl-20': isSidebarCollapsed}">
+      <div class="flex-1" :class="{'lg:pl-64': user && $route.path !== '/', 'lg:pl-20': user && $route.path !== '/' && isSidebarCollapsed}">
         <slot />
       </div>
     </main>
