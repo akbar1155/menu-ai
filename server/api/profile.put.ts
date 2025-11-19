@@ -4,13 +4,14 @@ import { prisma } from "../utils/prisma";
 
 interface ProfilePayload {
   name?: string;
+  email?: string;
   peopleCount?: number;
   dietaryPref?: "NORMAL" | "DIET" | "KIDS";
   allergies?: string[];
 }
 
 export default defineEventHandler(async (event) => {
-  const { profile } = await requireUser(event);
+  const { profile, user } = await requireUser(event);
   const body = (await readBody<ProfilePayload>(event)) ?? {};
 
   if (
@@ -23,10 +24,22 @@ export default defineEventHandler(async (event) => {
     });
   }
 
+  // Email'ni Supabase metadata'da yangilash (agar berilgan bo'lsa)
+  if (body.email !== undefined) {
+    const { serverSupabaseClient } = await import("#supabase/server");
+    const supabase = await serverSupabaseClient(event);
+    await supabase.auth.updateUser({
+      data: {
+        email: body.email,
+      },
+    });
+  }
+
   const updated = await prisma.userProfile.update({
     where: { id: profile.id },
     data: {
       name: body.name ?? profile.name,
+      email: body.email !== undefined ? body.email : profile.email,
       peopleCount: body.peopleCount ?? profile.peopleCount,
       dietaryPref: body.dietaryPref ?? profile.dietaryPref,
       allergies: body.allergies ?? profile.allergies,
@@ -40,6 +53,7 @@ export default defineEventHandler(async (event) => {
   return {
     id: updated.id,
     name: updated.name,
+    email: updated.email,
     peopleCount: updated.peopleCount,
     dietaryPref: updated.dietaryPref,
     allergies: updated.allergies,

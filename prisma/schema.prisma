@@ -7,7 +7,7 @@
 generator client {
   provider      = "prisma-client"
   output        = "../prisma/generated/client"
-  binaryTargets = ["native", "debian-openssl-3.0.x"]
+  binaryTargets = ["native", "debian-openssl-3.0.x", "darwin-arm64"]
 }
 
 datasource db {
@@ -31,6 +31,7 @@ model UserProfile {
   id             String           @id @default(cuid())
   supabaseId     String           @unique
   name           String?
+  email          String?
   isPro          Boolean          @default(false)
   proSince       DateTime?
   proExpiresAt   DateTime?

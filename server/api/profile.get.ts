@@ -35,7 +35,7 @@ export default defineEventHandler(async (event) => {
   );
   console.log("==============================================");
 
-  const { profile } = await requireUser(event);
+  const { profile, user } = await requireUser(event);
 
   const subscription = await prisma.subscription.findUnique({
     where: { userId: profile.id },
@@ -44,6 +44,7 @@ export default defineEventHandler(async (event) => {
   return {
     id: profile.id,
     name: profile.name,
+    email: profile.email || user.user_metadata?.email || user.email || null,
     peopleCount: profile.peopleCount,
     dietaryPref: profile.dietaryPref,
     allergies: profile.allergies,

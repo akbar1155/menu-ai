@@ -1,11 +1,14 @@
 <template>
-  <div class="settings">
-    <a-row :gutter="24">
+  <div class="settings p-4 sm:p-6">
+    <a-row :gutter="[16, 16]" class="sm:!gutter-24">
       <a-col :xs="24" :md="12">
         <a-card title="Profile">
           <a-form layout="vertical" @submit.prevent="onSave">
             <a-form-item label="Name">
               <a-input v-model:value="form.name" placeholder="Your name" />
+            </a-form-item>
+            <a-form-item label="Email">
+              <a-input v-model:value="form.email" type="email" placeholder="your@email.com" />
             </a-form-item>
             <a-form-item label="Number of people">
               <a-input-number v-model:value="form.peopleCount" :min="1" :max="10" style="width: 100%" />
@@ -20,7 +23,7 @@
             <a-form-item label="Allergies (comma separated)">
               <a-input v-model:value="form.allergies" placeholder="nuts, gluten" />
             </a-form-item>
-            <a-button type="primary" html-type="submit" :loading="store.isLoadingProfile">
+            <a-button type="primary" html-type="submit" :loading="store.isLoadingProfile" class="cursor-pointer">
               Save changes
             </a-button>
           </a-form>
@@ -33,7 +36,7 @@
             <strong>Renews:</strong>
             {{ dayjs(subscription.currentPeriodEnd).format('MMM D, YYYY') }}
           </p>
-          <a-button v-if="!store.isPro" type="primary" @click="navigateTo('/subscription')">
+          <a-button v-if="!store.isPro" type="primary" @click="navigateTo('/subscription')" class="cursor-pointer">
             Upgrade to Pro – 9,900 UZS
           </a-button>
           <a-alert v-else type="success" message="You are a Pro member with unlimited plans." show-icon />
@@ -56,6 +59,7 @@ const subscription = reactive({
 
 const form = reactive({
   name: '',
+  email: '',
   peopleCount: 1,
   dietaryPref: 'NORMAL',
   allergies: '',
@@ -71,6 +75,7 @@ onMounted(async () => {
   }
   if (store.profile) {
     form.name = store.profile.name ?? '';
+    form.email = store.profile.email ?? '';
     form.peopleCount = store.profile.peopleCount;
     form.dietaryPref = store.profile.dietaryPref;
     form.allergies = store.profile.allergies.join(', ');
@@ -84,6 +89,7 @@ onMounted(async () => {
 const onSave = async () => {
   const payload = {
     name: form.name,
+    email: form.email || undefined,
     peopleCount: form.peopleCount,
     dietaryPref: form.dietaryPref,
     allergies: form.allergies

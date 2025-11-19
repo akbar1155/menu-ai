@@ -42,7 +42,8 @@ export default defineNuxtConfig({
     // For server-only vars, use without NUXT_PUBLIC_ prefix
     geminiApiKey: process.env.GEMINI_API_KEY || "",
     supabaseServiceRoleKey: process.env.NITRO_SUPABASE_SERVICE_ROLE_KEY || "",
-    databaseUrl: process.env.NITRO_DATABASE_URL || "",
+    databaseUrl:
+      process.env.DATABASE_URL || process.env.NITRO_DATABASE_URL || "",
 
     public: {
       appUrl: process.env.NUXT_PUBLIC_APP_URL || "http://localhost:3000",
@@ -61,6 +62,13 @@ export default defineNuxtConfig({
   },
   supabase: {
     redirect: false,
+    cookieOptions: {
+      name: 'sb-access-token',
+      lifetime: 60 * 60 * 24 * 7, // 7 days
+      domain: 'localhost',
+      path: '/',
+      sameSite: 'lax',
+    },
     // Note: Missing URL/key warnings are expected when Supabase is not configured.
     // The app works without Supabase - see patches/@nuxtjs+supabase+2.0.1.patch
   },
@@ -76,7 +84,7 @@ export default defineNuxtConfig({
     },
   },
   routeRules: {
-    "/**": { ssr: true },
+    "/**": { ssr: false },
   },
   vite: {
     resolve: {

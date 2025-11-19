@@ -10,32 +10,32 @@
         <!-- Left Column -->
         <div>
           <h1
-            class="text-5xl md:text-6xl font-extrabold mb-6 leading-tight bg-linear-to-r from-white to-white/90 bg-clip-text text-transparent">
+            class="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold mb-4 sm:mb-6 leading-tight bg-linear-to-r from-white to-white/90 bg-clip-text text-transparent">
             AI yordamida ovqatlanish rejalashtirish oson
           </h1>
-          <p class="text-xl text-white/90 mb-8 leading-relaxed">
+          <p class="text-base sm:text-lg md:text-xl text-white/90 mb-6 sm:mb-8 leading-relaxed">
             MenuAI Google Gemini yordamida shaxsiylashtirilgan haftalik ovqatlanish rejalari va oziq-ovqat ro'yxatlarini
             yaratadi, shunda siz endi nima pishirishni bilmasligingiz kerak emas.
           </p>
           <div class="flex flex-wrap gap-5 mb-10">
-            <UButton to="/register" variant="solid" size="xl"
-              class="gap-2 bg-white text-gray-900 hover:bg-gray-100 rounded-2xl">
-              <UIcon name="i-lucide-rocket" class="w-5 h-5" />
-              Boshlash
+            <UButton to="/register" variant="solid" size="lg" 
+              class="sm:size-xl gap-2 bg-white text-gray-900 hover:bg-gray-100 rounded-2xl cursor-pointer">
+              <UIcon name="i-lucide-rocket" class="w-4 h-4 sm:w-5 sm:h-5" />
+              <span class="text-sm sm:text-base">Boshlash</span>
             </UButton>
 
           </div>
-          <ul class="space-y-3 text-white/95">
-            <li class="flex items-center gap-3 text-lg">
-              <UIcon name="i-lucide-check-circle-2" class="w-6 h-6 text-green-300" />
+          <ul class="space-y-2 sm:space-y-3 text-white/95">
+            <li class="flex items-center gap-2 sm:gap-3 text-base sm:text-lg">
+              <UIcon name="i-lucide-check-circle-2" class="w-5 h-5 sm:w-6 sm:h-6 text-green-300" />
               <span>Oilangiz uchun moslashtirilgan haftalik rejalar</span>
             </li>
-            <li class="flex items-center gap-3 text-lg">
-              <UIcon name="i-lucide-check-circle-2" class="w-6 h-6 text-green-300" />
+            <li class="flex items-center gap-2 sm:gap-3 text-base sm:text-lg">
+              <UIcon name="i-lucide-check-circle-2" class="w-5 h-5 sm:w-6 sm:h-6 text-green-300" />
               <span>Avtomatik oziq-ovqat ro'yxati PDF eksporti</span>
             </li>
-            <li class="flex items-center gap-3 text-lg">
-              <UIcon name="i-lucide-check-circle-2" class="w-6 h-6 text-green-300" />
+            <li class="flex items-center gap-2 sm:gap-3 text-base sm:text-lg">
+              <UIcon name="i-lucide-check-circle-2" class="w-5 h-5 sm:w-6 sm:h-6 text-green-300" />
               <span>Bepul tarifda har hafta bitta reja</span>
             </li>
           </ul>

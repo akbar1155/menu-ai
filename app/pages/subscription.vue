@@ -1,8 +1,8 @@
 <template>
-  <div class="subscription">
-    <h2>Choose your MenuAI plan</h2>
-    <p class="subtitle">Upgrade to Pro for unlimited weekly plans and specialised diets.</p>
-    <a-row :gutter="24">
+  <div class="subscription p-4 sm:p-6">
+    <h2 class="text-2xl sm:text-3xl font-bold mb-3">Choose your MenuAI plan</h2>
+    <p class="subtitle text-base sm:text-lg">Upgrade to Pro for unlimited weekly plans and specialised diets.</p>
+    <a-row :gutter="[16, 16]" class="sm:!gutter-24">
       <a-col :xs="24" :md="12">
         <a-card title="Free" class="tier" :bordered="store.isPro">
           <ul>
@@ -27,6 +27,7 @@
             @click="startCheckout"
             :loading="loading"
             :disabled="store.isPro"
+            class="cursor-pointer"
           >
             {{ store.isPro ? 'You are Pro' : 'Upgrade to Pro – 9,900 UZS' }}
           </a-button>

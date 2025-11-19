@@ -23,6 +23,7 @@ type SubscriptionStatus = "FREE" | "ACTIVE" | "CANCELED";
 type UserProfile = {
   id: string;
   name?: string;
+  email?: string | null;
   peopleCount: number;
   dietaryPref: string;
   allergies: string[];
@@ -44,7 +45,9 @@ export const useUserStore = defineStore("user", {
     async fetchProfile() {
       this.isLoadingProfile = true;
       try {
-        const data = await $fetch<UserProfile>("/api/profile");
+        const data = await $fetch<UserProfile>("/api/profile", {
+          credentials: 'include',
+        });
         this.profile = data;
       } finally {
         this.isLoadingProfile = false;
@@ -56,6 +59,7 @@ export const useUserStore = defineStore("user", {
         const data = await $fetch<UserProfile>("/api/profile", {
           method: "PUT",
           body: payload,
+          credentials: 'include',
         });
         this.profile = data;
       } finally {
@@ -65,7 +69,9 @@ export const useUserStore = defineStore("user", {
     async fetchLatestPlan() {
       this.isLoadingPlan = true;
       try {
-        const data = await $fetch<MealPlan>("/api/mealplans/latest");
+        const data = await $fetch<MealPlan>("/api/mealplans/latest", {
+          credentials: 'include',
+        });
         this.latestPlan = data;
       } catch (error) {
         if ((error as { statusCode?: number }).statusCode !== 404) {
